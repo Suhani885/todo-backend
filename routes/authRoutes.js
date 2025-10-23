@@ -44,6 +44,18 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/login", (req, res) => {
+  if (req.session?.userId) {
+    return res.json({
+      user: {
+        name: req.session.userName,
+      },
+    });
+  } else {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+});
+
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: "Logout failed" });

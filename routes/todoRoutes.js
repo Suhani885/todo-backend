@@ -3,12 +3,13 @@ const router = express.Router();
 const Todo = require("../models/Todo");
 
 function isAuth(req, res, next) {
-  if (!req.session.userId)
-    return res.status(401).json({ error: "Not authenticated" });
+  if (!req.session.userId) {
+    return next({ status: 401, message: "Not authenticated" });
+  }
   next();
 }
 
-router.get("/", isAuth, async (req, res) => {
+router.get("/", isAuth, async (req, res, next) => {
   try {
     const todos = await Todo.find({ user: req.session.userId });
     res.json({ todos });
@@ -17,12 +18,12 @@ router.get("/", isAuth, async (req, res) => {
   }
 });
 
-router.post("/", isAuth, async (req, res) => {
+router.post("/", isAuth, async (req, res, next) => {
   try {
     const { task } = req.body;
     if (!task) return res.status(400).json({ error: "Task is required" });
 
-    const todo = new Todo({ task, user: req.session.userId });
+    const todo = new Todo({ task, user: req.session.userId, completed: false });
     await todo.save();
     res.json({ message: "Todo added", todo });
   } catch (err) {
@@ -30,7 +31,7 @@ router.post("/", isAuth, async (req, res) => {
   }
 });
 
-router.put("/:id", isAuth, async (req, res) => {
+router.put("/:id", isAuth, async (req, res, next) => {
   try {
     const { task, completed } = req.body;
     const todo = await Todo.findOneAndUpdate(
@@ -45,7 +46,7 @@ router.put("/:id", isAuth, async (req, res) => {
   }
 });
 
-router.delete("/:id", isAuth, async (req, res) => {
+router.delete("/:id", isAuth, async (req, res, next) => {
   try {
     const todo = await Todo.findOneAndDelete({
       _id: req.params.id,
