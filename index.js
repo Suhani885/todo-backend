@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://do-bee-do.vercel.app/"],
+    origin: ["https://do-bee-do.vercel.app"],
     credentials: true,
   })
 );
@@ -29,7 +29,8 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
@@ -42,15 +43,17 @@ const todoRoutes = require("./routes/todoRoutes");
 app.use("/todos", todoRoutes);
 
 app.use((req, res) => {
+  res.header("Access-Control-Allow-Origin", "https://do-bee-do.vercel.app");
+  res.header("Access-Control-Allow-Credentials", "true");
   res.status(404).json({ error: "Route not found" });
 });
 
 app.use((err, req, res, next) => {
   console.error("Error:", err);
-
+  res.header("Access-Control-Allow-Origin", "https://do-bee-do.vercel.app");
+  res.header("Access-Control-Allow-Credentials", "true");
   const status = err.status || 500;
   const message = err.message || "Something went wrong";
-
   res.status(status).json({ error: message });
 });
 
